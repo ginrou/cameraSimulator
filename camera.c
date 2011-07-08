@@ -185,8 +185,8 @@ void blur2(char saveFileName[])
   IplImage *tmp;
   IplImage *img = cvCreateImage( cvSize(1024,1024), IPL_DEPTH_32F, 3);
   cvSetZero(img);
-  int PSFWidth = 8;
-  int PSFHeight = 8;
+  int PSFWidth = 32;
+  int PSFHeight = 32;
   for( x = 0; x < PSFWidth; ++x ){
     for( y=0 ; y<PSFHeight; ++y){
 
@@ -195,11 +195,12 @@ void blur2(char saveFileName[])
 			    apertureSize*(double)y/(double)PSFHeight);
       cvConvertScale( tmp, tmp, 255.0, 0.0);
 
-      
+#ifdef __DEBUG__
       char filename[256];
       sprintf(filename, "images/sample%d%d.png", x, y);
       cvSaveImage( filename, tmp );
-      
+#endif
+
       cvConvertScale( tmp, tmp, 1.0/(double)(PSFHeight*PSFWidth), 0.0);
 
       for(int h = 0 ; h < tmp->height; ++h){
