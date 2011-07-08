@@ -1,0 +1,6 @@
+*.o
+*.out
+*.obj
+*.mtl
+*.png
+DS_Store
