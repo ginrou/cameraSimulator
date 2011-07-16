@@ -532,7 +532,6 @@ void setPerspective(int viewMode)
   if( eyeMode == RIGHT_EYE )
     glTranslatef( baseLine, 0.0, 0.0);
 
-
   display();
 
 }
