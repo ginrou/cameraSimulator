@@ -18,10 +18,21 @@ GLfloat zoom;
 GLfloat fov; //zoomによって決定される視野角
 double baseLine; //ステレオの基線長
 double apertureSize;//開口直径
-double f = 1.0 ; //focal length
+double f = 1.0 ; //focal length == zNear
 
-GLdouble eye[3] = {0.0, 0.0, 3.0}; //視点
+
+#define VIEW_PERSPECTIVE 1
+GLdouble eye[3] = {0.0, 0.0, 0.0}; //視点
 GLdouble lookPt[3] = {0.0, 0.0, 0.0};
+GLdouble clickedDepth = 1.5;
+
+#define VIEW_FRUSTUM 2
+GLdouble frustum[4]; // 順に left right, bottom, top
+
+#define LEFT_EYE 0
+#define RIGHT_EYE 1
+int eyeMode = LEFT_EYE;
+
 
 //GLUI
 GLUI *glui;
@@ -37,7 +48,7 @@ void lists(void);
 //call back function of interface
 void resetRotation(int num);
 void resetLookPoint( int num);
-void setPerspective(int num);
+void setPerspective(int viewMode);
 void saveButton(int num);
 void depthButton(int num);
 
@@ -70,8 +81,8 @@ void initViewer(int argc, char* argv[])
   glutInit(&argc, argv);
   
   //window
-  winWidth = 1024;
-  winHeight = 1024;
+  winWidth = 512;
+  winHeight = 512;
   glutInitWindowPosition( 256, 0 );
   glutInitWindowSize( winWidth, winHeight);
   glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
@@ -125,7 +136,7 @@ void initViewer(int argc, char* argv[])
   objTrans->set_speed( 0.1 );
 
   //zoom
-  GLUI_Spinner* zoomSpinner = glui->add_spinner( "zoom", GLUI_SPINNER_FLOAT, &zoom, 1, setPerspective);
+  GLUI_Spinner* zoomSpinner = glui->add_spinner( "zoom", GLUI_SPINNER_FLOAT, &zoom, VIEW_PERSPECTIVE, setPerspective);
   zoomSpinner->set_float_limits( 1.0, 10.0, GLUI_LIMIT_CLAMP);
   zoomSpinner->set_speed( 0.33 );
 
@@ -230,12 +241,29 @@ IplImage* readPixelAtEye( double x, double y)
 
   GLint format = GL_BGR;
   GLint type = GL_FLOAT;
-  
   double prevEye[3];
+
+  double far = Z_MAX;
+  
   prevEye[0] = eye[0]; prevEye[1] = eye[1]; prevEye[2] = eye[2];
 
-  eye[0] = x; eye[1] = y;
-  setPerspective(0);
+  //set frustum
+  double d = clickedDepth;
+  frustum[0] = x - f * tan( fov * M_PI / 360.0 ) - f*x/d;
+  frustum[1] = x + f * tan( fov * M_PI / 360.0 ) - f*x/d;
+  frustum[2] = y - f * tan( fov * M_PI / 360.0 ) - f*y/d;
+  frustum[3] = y + f * tan( fov * M_PI / 360.0 ) - f*y/d;
+
+  eye[0] = ( frustum[0] + frustum[1] ) / 2.0 * d / f;
+  eye[1] = ( frustum[2] + frustum[3] ) / 2.0 * d / f;
+
+  setPerspective( VIEW_FRUSTUM );
+
+#ifdef __DEBUG__  
+  printf("left = %lf,  right = %lf,  ", frustum[0], frustum[1]);
+  printf("bottom = %lf,  top = %lf \n", frustum[2], frustum[3]);
+  printf("x = %lf, y = %lf \n", eye[0], eye[1]);
+#endif   
 
   IplImage* img = cvCreateImage( cvSize( winWidth, winHeight), IPL_DEPTH_32F,3);
 
@@ -258,11 +286,11 @@ IplImage* readDepthBuffer(void)
   
   IplImage* depth = cvCreateImage( cvSize( winWidth, winHeight), IPL_DEPTH_32F, 1);
   float n = 1.0;
-  float f = Z_MAX;
+  float far = Z_MAX;
 
   for( int h = 0; h < winHeight; ++h){
     for( int w = 0; w < winWidth; ++w){
-      float z = f*n / ( (f-n)*zBuffer[h*winWidth+w] - f);
+      float z = far*n / ( (far-n)*zBuffer[h*winWidth+w] - far);
       CV_IMAGE_ELEM(depth, float, h, w) = z;
     }
   }
@@ -335,9 +363,8 @@ void display(void)
 
 
   glPopMatrix();
-
+  
   glutSwapBuffers();
-
 
 }
 
@@ -360,15 +387,16 @@ void mouse( int button, int state, int x, int y)
     IplImage *depthBuffer = readDepthBuffer();
 
     float depth = - CV_IMAGE_ELEM( depthBuffer, float, winHeight-y, x);
+    clickedDepth = depth;
 
     //disparity - psfSize parameter
     double disparity = (double)winWidth*baseLine/(2.0*depth*tan( fov*M_PI/360.0 ));
-    
+
+
     cvReleaseImage( &depthBuffer);
     double pInf = (double)winWidth*baseLine/(2.0*Z_MAX*tan( fov*M_PI/360.0 ));
     float a = MAX_DISPARITY / ( disparity - pInf );
     float b = - a * disparity ;
-
     printf("depth at %d, %d = %f, disparity = %lf\n", y, x, depth, disparity);
 
     tBox[0]->set_float_val( a );
@@ -390,14 +418,14 @@ void mouse( int button, int state, int x, int y)
     for(int i = 0; i < 3; ++i)
       lookPt[i] -= eye[i];
 
-    printf("look at %lf, %lf, %lf\n", lookPt[0], lookPt[1], lookPt[2]);
+    printf("look at %lf, %lf, %lf depth = %f\n", lookPt[0], lookPt[1], lookPt[2], depth);
     apertureSize
       = 2.0 * depth * Z_MAX * MAX_PSF_RADIUS * tan( fov*M_PI/360.0 )
       / ((double)winWidth * (Z_MAX - depth ));
 
     printf("aperture size = %lf\n", apertureSize);
 
-    setPerspective(0);
+    setPerspective(VIEW_PERSPECTIVE );
   }
 }
 
@@ -406,7 +434,7 @@ void resize( int w, int h)
 {
   winWidth = w;  
   winHeight = h;
-  setPerspective(0);
+  setPerspective( VIEW_PERSPECTIVE );
 }
 
 
@@ -470,26 +498,40 @@ void resetLookPoint( int num)
 {
   printf("reset look point\n");
   lookPt[0] =  lookPt[1] =  lookPt[2] = 0.0;
-  setPerspective(0);
+  setPerspective( VIEW_PERSPECTIVE );
 }
 
-void setPerspective(int num)
+void setPerspective(int viewMode)
 {
   glViewport( 0, 0, winWidth, winHeight );
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  fov = (GLfloat)(2.0*atan( tan(40.0*M_PI/180.0) / (double)zoom ) *180.0/M_PI);
+  fov = (GLfloat)(atan( tan(40.0*M_PI/180.0) / (double)zoom ) *360.0/M_PI);
 
   baseLine = MAX_DISPARITY * 2.0 * f * tan( fov * M_PI / 360.0 ) / (double)winWidth;
 
-  gluPerspective( fov, (GLfloat)winHeight / (GLfloat)winWidth, 1.0, Z_MAX );
-  
-  glMatrixMode(GL_MODELVIEW);
+  if( viewMode == VIEW_PERSPECTIVE )
+    {
+      gluPerspective( fov, (GLfloat)winHeight / (GLfloat)winWidth, f, Z_MAX );
+    }
+  else if( viewMode == VIEW_FRUSTUM )
+    {
+      glFrustum( frustum[0], frustum[1], frustum[2], frustum[3], f, Z_MAX);
+    }
+
+
+  glMatrixMode( GL_MODELVIEW );
   glLoadIdentity();
-  gluLookAt( eye[0], eye[1], eye[2], 
-	     lookPt[0], lookPt[1], lookPt[2],
-	     0.0, 1.0, 0.0);
+  glTranslatef( 0.0, 0.0, -3.0 );
+
+  // translation for blurring image
+  glTranslatef( eye[0], eye[1], 0.0 );
+
+  // translation for stereo image;
+  if( eyeMode == RIGHT_EYE )
+    glTranslatef( baseLine, 0.0, 0.0);
+
 
   display();
 
@@ -536,9 +578,7 @@ void changeDTPParam( int id){
 
 void takeBlurredImage( int num )
 {
-  //blur((char*)"blurred.png");
-  blur2( (char*)"hoge");
-  
+  blur((char*)"blurred.png");
 }
 
 void takeStereoImage( int num )
@@ -550,39 +590,30 @@ void takeStereoImage( int num )
   printf("d = %lf, f = %lf, fov = %lf, winWidth = %d\n",
 	 MAX_DISPARITY, f, fov, winWidth);
 
-  eye[0] = 0.0;
-  lookPt[0] = 0.0;
-  setPerspective(0);
+  eyeMode = LEFT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
   saveImage( (char*)"left.png" );
 
-  eye[0] = baseLine;
-  lookPt[0] = baseLine;
-  setPerspective(0);
+  eyeMode = RIGHT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
   saveImage( (char*)"right.png" );
 
-  eye[0] = 0.0;
-  lookPt[0] = 0.0;
-  setPerspective(0);
-
+  eyeMode = LEFT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
 }
 
 void takeStereoBlurredImage( int num )
 {
-  double f = 1.0; //focal length
   baseLine = MAX_DISPARITY * 2.0 * f * tan( fov * M_PI / 360.0 ) / (double)winWidth;
   
-  eye[0] = 0.0;
-  lookPt[0] = 0.0;
-  setPerspective(0);
+  eyeMode = LEFT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
   blur( (char*)"blurredLeft.png");
 
-  eye[0] = baseLine;
-  lookPt[0] = baseLine;
-  setPerspective(0);
+  eyeMode = RIGHT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
   blur( (char*)"blurredRight.png");
   
-  eye[0] = 0.0;
-  lookPt[0] = 0.0;
-  setPerspective(0);
-
+  eyeMode = LEFT_EYE;
+  setPerspective(VIEW_PERSPECTIVE);
 }

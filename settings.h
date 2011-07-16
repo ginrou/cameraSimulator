@@ -2,9 +2,10 @@
 #define __SETTINGS__
 
 #define MAX_PSF_RADIUS 32.0
-#define MAX_DISPARITY 16.0
+#define MAX_DISPARITY 32.0
 #define Z_MAX 128.0
 
+//#define __DEBUG__ 1
 
 //file path
 #define OBJECT_FILE_PATH "object/blocks.obj"
@@ -14,5 +15,8 @@
 #define DEPTH_BUFFER "depth.png"
 #define SCREAN_IAMGE "screan.png"
 
+
+//escape sequence
+#define _ClearLine() { fputs( "\r\x1b[2K", stdout);fflush(stdout); }
 
 #endif

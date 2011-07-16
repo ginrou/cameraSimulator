@@ -1,6 +1,6 @@
 #include <camera.h>
 
-IplImage* aperture;
+IplImage* aperture = NULL;
 double param[2]; // psfsize = param[0] * disparity + param[1]
 
 
@@ -95,8 +95,18 @@ void saveDepthMap(char filename[] )
 void setAperture( char filename[] )
 {
   if(!aperture) cvReleaseImage(&aperture);
-  aperture = cvLoadImage(filename, CV_LOAD_IMAGE_GRAYSCALE);
+  IplImage *load = cvLoadImage(filename, CV_LOAD_IMAGE_GRAYSCALE);
+  IplImage *tmp  = cvCreateImage( cvGetSize(load), IPL_DEPTH_64F, 1);
+  aperture = cvCreateImage( cvSize( MAX_PSF_RADIUS, MAX_PSF_RADIUS), IPL_DEPTH_64F, 1);
+
+  cvConvert( load, tmp);
+  cvResize( tmp, aperture);
+  cvNormalize( aperture, aperture, 1.0, 0.0, CV_L1, NULL);
   printf("%s is loaded as aperture\n", filename);
+
+  cvReleaseImage( &load );
+  cvReleaseImage( &tmp );
+
   return;
 }
 
@@ -107,116 +117,55 @@ void setDispSizeParam( double a, double b)
   printf("parameter = %lf, %lf\n", param[0], param[1]);
 }
 
-void blur(char filename[])
-{
-  // disparity = p[0] / depth + p[1];
-  double disparity2PSFSize[2];
-  getdepth2PSFSize( disparity2PSFSize );
-  
-  IplImage* screan = readPixel();
-  IplImage* depthMap = readDepthBuffer();
-  cvConvertScale( screan, screan, 255.0, 0.0);
-  cvFlip( screan, NULL, 0);
-  cvFlip( depthMap, NULL, 0);
-
-
-  //psf
-  int minDisparity = 0.0;
-  int maxDisparity = MAX_DISPARITY;
-  IplImage* psf[(int)(MAX_DISPARITY+1)];
-  //makePSF( psf, minDisparity, maxDisparity);
-  
-  makeShiftPSF( psf, minDisparity, maxDisparity);
-
-  //dst image
-  IplImage* dst = cvCreateImage( cvGetSize( screan ), IPL_DEPTH_64F, screan->nChannels);
-  cvSetZero(dst);
-  
-  //blurring
-  for(int h = 0; h < dst->height; ++h){
-    for( int w = 0; w < dst->width ; ++w){
-      
-      float depth = CV_IMAGE_ELEM( depthMap, float, h, w) ;
-      int disparity = -disparity2PSFSize[0] / depth + disparity2PSFSize[1];
-
-      CvSize sz = cvGetSize(psf[disparity]);
-
-      for( int y = 0 ; y < sz.height; ++y){
-	for( int x = 0; x < sz.width; ++x){
-
-	  CvPoint pt = cvPoint( x + w - sz.width/2, y + h - sz.height/2 );
-	  
-	  if( pt.x < 0 || pt.x >= dst->width ||
-	      pt.y < 0 || pt.y >= dst->height)
-	    continue;
-	  
-	  for(int c = 0 ; c < dst->nChannels; ++c){
-	    CV_IMAGE_ELEM( dst, double, h, w*dst->nChannels + c) 
-	      += CV_IMAGE_ELEM( screan, float, pt.y, pt.x * screan->nChannels +c)
-	      * CV_IMAGE_ELEM( psf[disparity], double, y, x);
-	  }
-	}
-      }
-
-      
-    }
-  }
-
-
-
-  IplImage* ret = cvCreateImage( cvGetSize(dst), IPL_DEPTH_8U, dst->nChannels);
-  cvConvert( dst, ret);
-  cvSaveImage( filename, ret);
-
-
-  for(int i = 0; i < 16; ++i)
-    cvReleaseImage( &(psf[i]) );
-  cvReleaseImage(&screan);
-  cvReleaseImage(&depthMap);
-  cvReleaseImage(&dst);
-  cvReleaseImage(&ret);
-  return;
-}
-
-void blur2(char saveFileName[])
+void blur(char saveFileName[])
 {
   int x,y;
   double apertureSize = getApertureSize();
   IplImage *tmp;
-  IplImage *img = cvCreateImage( cvSize(1024,1024), IPL_DEPTH_32F, 3);
+  IplImage *img = cvCreateImage( cvSize(512,512), IPL_DEPTH_32F, 3);
   cvSetZero(img);
-  int PSFWidth = 32;
-  int PSFHeight = 32;
+  int PSFWidth = aperture->width;
+  int PSFHeight = aperture->height;
+
+  printf("blurring\n");
+
   for( x = 0; x < PSFWidth; ++x ){
-    for( y=0 ; y<PSFHeight; ++y){
+    for( y = 0; y < PSFHeight; ++y){
 
+      tmp = readPixelAtEye( apertureSize*(double)(x-PSFWidth/2)/(double)PSFWidth,
+			    apertureSize*(double)(y-PSFHeight/2)/(double)PSFHeight);
 
-      tmp = readPixelAtEye( apertureSize*(double)x/(double)PSFWidth,
-			    apertureSize*(double)y/(double)PSFHeight);
       cvConvertScale( tmp, tmp, 255.0, 0.0);
 
 #ifdef __DEBUG__
+      cvFlip(tmp, tmp, 0);
       char filename[256];
       sprintf(filename, "images/sample%d%d.png", x, y);
       cvSaveImage( filename, tmp );
+      cvFlip(tmp, tmp, 0);
 #endif
+      
+      _ClearLine();
+      printf("progress : %d %%",100*(x*PSFHeight+y)/(PSFWidth*PSFHeight));
 
-      cvConvertScale( tmp, tmp, 1.0/(double)(PSFHeight*PSFWidth), 0.0);
 
       for(int h = 0 ; h < tmp->height; ++h){
 	for( int w = 0 ; w < tmp->width; ++w){
 	  for( int c = 0 ; c < 3 ; ++c){
-	  CV_IMAGE_ELEM( img,float,h,w*3+c) += CV_IMAGE_ELEM(tmp,float,h,w*3+c);
+	    CV_IMAGE_ELEM( img,float,h,w*3+c) += 
+	      CV_IMAGE_ELEM( aperture, double, y, x)*CV_IMAGE_ELEM(tmp,float,h,w*3+c);
 	  }
 	}
       }
-
+      
       cvReleaseImage(&tmp);
     }
   }
 
+  printf("finished\n");
+
   cvFlip( img, NULL, 0);
-  cvSaveImage( "images/blurred.png", img );
+  cvSaveImage( saveFileName, img );
 
   return;
 }

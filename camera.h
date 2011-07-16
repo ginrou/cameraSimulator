@@ -1,6 +1,8 @@
 #ifndef __CAMERA__
 #define __CAMERA__
 
+
+
 //OpenGL
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -19,7 +21,6 @@ void saveImage(char filename[]);
 void saveDepthMap(char filename[] );
 void setAperture( char filename[] );
 void setDispSizeParam( double a, double b);
-void blur(char filename[]);
-void blur2(char saveFileName[]);
+void blur(char saveFileName[]);
 
 #endif
