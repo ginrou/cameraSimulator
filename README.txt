@@ -20,12 +20,15 @@ z': ぼけBまでの距離
 R : 倍率 ( f / z )
 
 カメラ座標系からウィンドウ座標系への変換
-2f tan( fov / 2) : B = WinWidth : Max PSF Size
+2f * tan( fov / 2) : B = WinWidth : Max PSF Size
 より
 B = MPS* 2f tan(fov/2) / WinWidth
 よって
 D = 2 * R * z * z' * tan(fov/2) / w ( z' -z )
 
 無限遠でぼけが最大になるという仮定をおくと
-z' : 無限遠
+z' : 無限遠 = z : D
 となる
+
+
+画面上での距離(z)と視差(d)の変換

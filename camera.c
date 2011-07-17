@@ -81,7 +81,7 @@ void saveDepthMap(char filename[] )
   IplImage* glDepth = readDepthBuffer();
 
   IplImage* depth = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
-  cvConvertScale( glDepth, depth, -64.0, -1.0);
+  cvConvertScale( glDepth, depth, -32.0, -1.0);
   cvFlip( depth, NULL, 0);
   cvSaveImage( filename, depth);
   
