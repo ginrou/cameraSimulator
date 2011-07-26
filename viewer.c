@@ -326,6 +326,38 @@ void setTexture( char *filename )
 
 }
 
+
+void saveParameters( char *filename )
+{
+  char buf[256];
+  if( filename != NULL ){
+    strcpy( buf, filename );
+  }else{
+    time_t timer;
+    struct tm* tst;
+    time(&timer);
+    tst = localtime(&timer);
+    sprintf(buf, "param/%02d%02d%02d-%02d%02d.txt", 
+	    tst->tm_year-100, tst->tm_mon, tst->tm_mday, tst->tm_hour, tst->tm_min);
+  }
+
+  FILE *fp = fopen( buf, "w" );
+  if( fp == NULL ){
+    printf("error in save parameters. cannot open file\n");
+    return;
+  }else{
+    fprintf( fp, "Window Size [pixel] : height = %d, width = %d\n",  winWidth, winHeight);
+    fprintf( fp, "base line length [camera corrdinate]: %lf \n", baseLine );
+    fprintf( fp, "aperture size [camera corrdinate]: %lf \n", apertureSize );
+    fprintf( fp, "fov [angle] :  %lf \n", fov);
+    fprintf( fp, "PSF Size <--> disparity param [pixel] : PSFSize = %lf * disparity + %lf\n", tBox[0]->get_float_val(), tBox[1]->get_float_val());
+    fprintf( fp, "max disparity [pixel] : %lf \n", MAX_DISPARITY);
+    fprintf( fp, "max psf size [pixel]  : %lf \n", MAX_PSF_RADIUS);
+
+    fclose(fp);
+  }
+}
+
 void getdepth2PSFSize( double dst[2] )
 {
   dst[0] = (double)winWidth * baseLine / (2.0 * tan( fov *M_PI / 360.0 ));
@@ -337,6 +369,8 @@ double getApertureSize(void)
 {
   return apertureSize;
 }
+
+
 
 
 /*----------------------------------------------------------------- 
@@ -578,6 +612,7 @@ void changeDTPParam( int id){
 void takeBlurredImage( int num )
 {
   blur((char*)"blurred.png");
+  saveParameters(NULL);
 }
 
 void takeStereoImage( int num )
@@ -599,11 +634,16 @@ void takeStereoImage( int num )
 
   eyeMode = LEFT_EYE;
   setPerspective(VIEW_PERSPECTIVE);
+
+  saveParameters(NULL);
+  
 }
 
 void takeStereoBlurredImage( int num )
 {
   baseLine = MAX_DISPARITY * 2.0 * f * tan( fov * M_PI / 360.0 ) / (double)winWidth;
+
+  saveParameters(NULL);
   
   eyeMode = LEFT_EYE;
   setPerspective(VIEW_PERSPECTIVE);
@@ -615,4 +655,5 @@ void takeStereoBlurredImage( int num )
   
   eyeMode = LEFT_EYE;
   setPerspective(VIEW_PERSPECTIVE);
+
 }

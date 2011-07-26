@@ -1,0 +1,7 @@
+Window Size [pixel] : height = 512, width = 512
+base line length [camera corrdinate]: 0.042549 
+aperture size [camera corrdinate]: 0.075818 
+fov [angle] :  37.596695 
+PSF Size <--> disparity param [pixel] : PSFSize = 1.781888 * disparity + -32.445473
+max disparity [pixel] : 32.000000 
+max psf size [pixel]  : 32.000000 
