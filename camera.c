@@ -91,6 +91,37 @@ void saveDepthMap(char filename[] )
   return;
 }
 
+void saveDispMap( char filename[] )
+{
+  IplImage* glDepth = readDepthBuffer();
+  IplImage* dst = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
+  cvSetZero(dst);
+
+  double b = getBaselineLength();
+  double tfov = ( getFieldOfView() * M_PI / 360.0 );
+  double W = glDepth->width;
+
+  for(int h = 0; h < dst->height; ++h){
+    for( int w = 0 ; w < dst->width; ++w ){
+      double depth = -CV_IMAGE_ELEM( glDepth, float, h, w);
+      double disp;
+      if( depth > 127 ){
+	disp = 256/4.0;
+      }else{
+	disp = (W*b)/(2.0*depth*tfov);
+      }
+
+      CV_IMAGE_ELEM( dst, uchar, h, w) = disp * 4.0;
+
+    }
+  }
+  
+  cvFlip(dst, NULL, 0);
+  cvSaveImage(filename, dst);
+  cvReleaseImage(&glDepth);
+  cvReleaseImage(&dst);
+}
+
 
 void setAperture( char filename[] )
 {

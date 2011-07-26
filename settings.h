@@ -14,6 +14,7 @@
 //debug file path
 #define DEPTH_BUFFER "depth.png"
 #define SCREAN_IAMGE "screan.png"
+#define DISPARITY_MAP "disparityMap.png"
 
 
 //escape sequence

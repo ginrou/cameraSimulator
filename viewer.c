@@ -51,6 +51,7 @@ void resetLookPoint( int num);
 void setPerspective(int viewMode);
 void saveButton(int num);
 void depthButton(int num);
+void saveDispButton( int num);
 
 void changePSF( int id);
 int listBoxVar;
@@ -146,6 +147,8 @@ void initViewer(int argc, char* argv[])
   //save depth map
   glui->add_button("save depth map", 1, depthButton);
 
+  //save disparity map
+  glui->add_button("save disparity map", 1, saveDispButton);
   
   //change psf
   GLUI_Listbox* listBox = glui->add_listbox("PSF", &listBoxVar, 1, changePSF);
@@ -370,6 +373,13 @@ double getApertureSize(void)
   return apertureSize;
 }
 
+double getBaselineLength(void){
+  return baseLine;
+}
+
+double getFieldOfView(void){ //[degree]
+  return fov;
+}
 
 
 
@@ -520,8 +530,6 @@ void lists(void)
   コールバック関数ここから
  ****************************************/
 
-
-
 void resetRotation(int num)
 {
   printf("reset rotation\n");
@@ -578,6 +586,12 @@ void saveButton(int num)
 void depthButton(int num)
 {
   saveDepthMap((char*)DEPTH_BUFFER);
+}
+
+
+void saveDispButton( int num)
+{
+  saveDispMap( (char*)DISPARITY_MAP );
 }
 
 

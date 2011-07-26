@@ -19,6 +19,7 @@
 
 void saveImage(char filename[]);
 void saveDepthMap(char filename[] );
+void saveDispMap( char filename[] );
 void setAperture( char filename[] );
 void setDispSizeParam( double a, double b);
 void blur(char saveFileName[]);
