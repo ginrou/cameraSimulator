@@ -3,4 +3,4 @@
 *.obj
 *.mtl
 *.png
-DS_Store
+.DS_Store
