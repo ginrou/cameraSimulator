@@ -16,6 +16,8 @@
 //private 
 #include "settings.h"
 #include <viewer.h>
+#include <batch.h>
+
 
 void saveImage(char filename[]);
 void saveDepthMap(char filename[] );

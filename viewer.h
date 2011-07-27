@@ -19,7 +19,7 @@
 #include "settings.h"
 #include "glm.h"
 #include <camera.h>
-
+#include <batch.h>
 
 //functions
 void initViewer(int argc, char* argv[]);
@@ -38,5 +38,34 @@ void getdepth2PSFSize( double dst[2] );
 double getApertureSize(void);
 double getBaselineLength(void);
 double getFieldOfView(void); //[degree]
+
+
+//private method
+void display(void);
+void keyboard( unsigned char key, int x, int y );
+void mouse( int button, int state, int x, int y);
+void resize( int w, int h);
+void lists(void);
+
+//call back function of interface
+void resetRotation(int num);
+void resetLookPoint( int num);
+void setPerspective(int viewMode);
+void saveButton(int num);
+void depthButton(int num);
+void saveDispButton( int num);
+
+void changePSF( int id);
+
+
+void changeDTPParam( int id );
+
+
+void takeBlurredImage( int num );
+void takeStereoImage( int num );
+void takeStereoBlurredImage( int num );
+
+
+
 
 #endif

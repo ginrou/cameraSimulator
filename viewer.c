@@ -38,31 +38,8 @@ int eyeMode = LEFT_EYE;
 GLUI *glui;
 GLUI_Rotation *objRot;
 
-//private method
-void display(void);
-void keyboard( unsigned char key, int x, int y );
-void mouse( int button, int state, int x, int y);
-void resize( int w, int h);
-void lists(void);
-
-//call back function of interface
-void resetRotation(int num);
-void resetLookPoint( int num);
-void setPerspective(int viewMode);
-void saveButton(int num);
-void depthButton(int num);
-void saveDispButton( int num);
-
-void changePSF( int id);
 int listBoxVar;
-
-void changeDTPParam( int id );
 GLUI_EditText* tBox[2];
-
-void takeBlurredImage( int num );
-void takeStereoImage( int num );
-void takeStereoBlurredImage( int num );
-
 
 //Rotation matrix in glui
 GLfloat rotMat[16] = {
@@ -185,8 +162,9 @@ void initViewer(int argc, char* argv[])
   //phisical parameters
   fov = (GLfloat)(2.0*atan( tan(40.0*M_PI/180.0) / (double)zoom ) *180.0/M_PI);
   baseLine = MAX_DISPARITY * 2.0  * tan( fov * M_PI / 360.0 ) / (double)winWidth;
-  
 
+  batch();
+  
   //main loop
   glutMainLoop();
 
