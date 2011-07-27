@@ -9,7 +9,7 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include <GL/glui.h>
+#include <GLUI/GLUI.h>
 
 //OpenCV
 #include <cv.h>
