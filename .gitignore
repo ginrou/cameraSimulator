@@ -3,4 +3,4 @@
 *.obj
 *.mtl
 *.DS_Store
-
+*.gigignore
