@@ -2,9 +2,5 @@
 *.out
 *.obj
 *.mtl
-<<<<<<< HEAD
-*.png
-.DS_Store
-=======
-DS_Store
->>>>>>> .pngを追加s
+*.DS_Store
+
