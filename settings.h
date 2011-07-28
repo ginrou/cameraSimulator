@@ -8,7 +8,7 @@
 //#define __DEBUG__ 1
 
 //file path
-#define OBJECT_FILE_PATH "object/blocks.obj"
+#define OBJECT_FILE_PATH "object/research.obj"
 #define TEXTURE_FILE_PATH "object/texture.png"
 
 //debug file path
