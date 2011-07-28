@@ -1,4 +1,4 @@
 *.o
 *.out
 *.DS_Store
-*.gigignore
+*.gitignore
