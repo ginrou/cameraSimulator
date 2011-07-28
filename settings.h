@@ -5,10 +5,13 @@
 #define MAX_DISPARITY 32.0
 #define Z_MAX 128.0
 
+#define WINDOW_WIDTH 512
+#define WINDOW_HEIGHT 512
+
 //#define __DEBUG__ 1
 
 //file path
-#define OBJECT_FILE_PATH "object/research.obj"
+#define OBJECT_FILE_PATH "object/blocks.obj"
 #define TEXTURE_FILE_PATH "object/wood.png"
 
 //debug file path

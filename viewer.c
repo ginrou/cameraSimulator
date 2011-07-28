@@ -59,9 +59,9 @@ void initViewer(int argc, char* argv[])
   glutInit(&argc, argv);
   
   //window
-  winWidth = 512;
-  winHeight = 512;
-  glutInitWindowPosition( 256, 0 );
+  winWidth = WINDOW_WIDTH;
+  winHeight = WINDOW_HEIGHT;
+  glutInitWindowPosition( 480, 0 );
   glutInitWindowSize( winWidth, winHeight);
   glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
   GLuint winNumber = glutCreateWindow( argv[0] );
@@ -72,11 +72,8 @@ void initViewer(int argc, char* argv[])
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-
   glEnable(GL_DEPTH_TEST);
-
   glEnable(GL_CULL_FACE);
-
 
   //texture
   if( argc < 3 )
@@ -102,49 +99,60 @@ void initViewer(int argc, char* argv[])
   GLUI_Master.set_glutKeyboardFunc( keyboard );
   GLUI_Master.set_glutMouseFunc( mouse );
 
-
+  //geometry
+  GLUI_Panel* geoPanel = glui->add_panel("geometry");
   //rotation
-  objRot = glui->add_rotation( "rot", rotMat );
-  glui->add_button("reset Rotation", 1, resetRotation);
-
-  glui->add_button("reset look Point", 1, resetLookPoint);
-
+  objRot = glui->add_rotation_to_panel(geoPanel,  "rot", rotMat );
   //translation
-  GLUI_Translation* objTrans =  glui->add_translation("pan", GLUI_TRANSLATION_XY, shift);
+  GLUI_Translation* objTrans =  glui->add_translation_to_panel(geoPanel, "pan", GLUI_TRANSLATION_XY, shift);
   objTrans->set_speed( 0.1 );
 
+  glui->add_button_to_panel(geoPanel, "reset Rotation", 1, resetRotation);
+  glui->add_button_to_panel(geoPanel, "reset look Point", 1, resetLookPoint);
+
+
+  //Camera parameters
+  GLUI_Panel* cameraPanel = glui->add_panel("camera parameters");
   //zoom
-  GLUI_Spinner* zoomSpinner = glui->add_spinner( "zoom", GLUI_SPINNER_FLOAT, &zoom, VIEW_PERSPECTIVE, setPerspective);
+  GLUI_Spinner* zoomSpinner 
+    = glui->add_spinner_to_panel(cameraPanel, "zoom", GLUI_SPINNER_FLOAT, &zoom, VIEW_PERSPECTIVE, setPerspective);
   zoomSpinner->set_float_limits( 1.0, 10.0, GLUI_LIMIT_CLAMP);
   zoomSpinner->set_speed( 0.33 );
 
-  //save button
-  glui->add_button("save image", 1, saveButton);
-
-  //save depth map
-  glui->add_button("save depth map", 1, depthButton);
-
-  //save disparity map
-  glui->add_button("save disparity map", 1, saveDispButton);
-  
   //change psf
-  GLUI_Listbox* listBox = glui->add_listbox("PSF", &listBoxVar, 1, changePSF);
+  GLUI_Listbox* listBox = glui->add_listbox_to_panel(cameraPanel, "aperture", &listBoxVar, 1, changePSF);
   listBox->add_item( 0, "circle" );
   listBox->add_item( 1, "Zhou" );
   listBox->add_item( 2, "MLS" );
 
   //DTPparam
-  tBox[0] = glui->add_edittext( "a:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
-  tBox[1] = glui->add_edittext( "b:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
+  tBox[0] = glui->add_edittext_to_panel(cameraPanel, "a:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
+  tBox[1] = glui->add_edittext_to_panel(cameraPanel, "b:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
 
-  //take blurred image
-  glui->add_button("take blurred image", 1, takeBlurredImage);
 
-  //take stereo image
-  glui->add_button( "take stereo image", 1, takeStereoImage);
+  glui->add_column(true);
 
-  glui->add_button( "take stereo blurred image", 1, takeStereoBlurredImage);
-
+  //save images
+  GLUI_Panel* savePanel = glui->add_panel("save image");
+  GLUI_Button* btn;
+  //save button
+  btn = glui->add_button_to_panel(savePanel, "current image", 1, saveButton);
+  btn->set_alignment(GLUI_ALIGN_LEFT);
+  //save depth map
+  btn = glui->add_button_to_panel(savePanel, "depth map", 1, depthButton);
+  btn->set_alignment(GLUI_ALIGN_LEFT);
+  //save disparity map
+  btn = glui->add_button_to_panel(savePanel, "disparity map", 1, saveDispButton);
+  btn->set_alignment(GLUI_ALIGN_LEFT);  
+  //save blurred image
+  btn = glui->add_button_to_panel(savePanel, "blurred image", 1, takeBlurredImage);
+  btn->set_alignment(GLUI_ALIGN_LEFT);
+  //save stereo image
+  btn = glui->add_button_to_panel(savePanel, "stereo image", 1, takeStereoImage);
+  btn->set_alignment(GLUI_ALIGN_LEFT);
+  //save stereo blurred image
+  btn = glui->add_button_to_panel(savePanel, "stereo blurred image", 1, takeStereoBlurredImage);
+  btn->set_alignment(GLUI_ALIGN_LEFT);
 
   //initial values
   //psf : Circle
@@ -266,7 +274,7 @@ IplImage* readDepthBuffer(void)
 		GL_DEPTH_COMPONENT, GL_FLOAT, zBuffer);
   
   IplImage* depth = cvCreateImage( cvSize( winWidth, winHeight), IPL_DEPTH_32F, 1);
-  float n = 1.0;
+  float n = f;
   float far = Z_MAX;
 
   for( int h = 0; h < winHeight; ++h){
