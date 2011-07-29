@@ -6,7 +6,7 @@ INCLUDE_DIR = . #current directory
 
 MAINFILE = main.c
 TARGET = ${MAINFILE:.c=.out}
-SRCS = ${MAINFILE} viewer.c glm.c camera.c batch.c
+SRCS = ${MAINFILE} viewer.c glm.c camera.c batch.c parameter.c
 OBJS = ${SRCS:.c=.o}
 
 ##OpenCVを追加する時

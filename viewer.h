@@ -9,7 +9,7 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include <GLUI/GLUI.h>
+#include <GL/glui.h>
 
 //OpenCV
 #include <cv.h>
@@ -18,6 +18,7 @@
 //private files
 #include "settings.h"
 #include "glm.h"
+#include <parameter.h>
 #include <camera.h>
 #include <batch.h>
 
@@ -33,12 +34,6 @@ IplImage* readDepthBuffer(void); // clipped from -128 to -1 (カメラ座標系)
 
 IplImage* readPixelAtEye( double x, double y);
 
-//encapsulation
-void getdepth2PSFSize( double dst[2] );
-double getApertureSize(void);
-double getBaselineLength(void);
-double getFieldOfView(void); //[degree]
-
 
 //private method
 void display(void);
@@ -51,21 +46,20 @@ void lists(void);
 void resetRotation(int num);
 void resetLookPoint( int num);
 void setPerspective(int viewMode);
+
 void saveButton(int num);
 void depthButton(int num);
 void saveDispButton( int num);
-
-void changePSF( int id);
-
-
-void changeDTPParam( int id );
-
-
 void takeBlurredImage( int num );
 void takeStereoImage( int num );
 void takeStereoBlurredImage( int num );
 
+void changeCamera( int num);
 
+void changeZoom(int id);
+void changePSF( int id);
+void changeDTPParam( int id );
+void changeFocalDepth( int id );
 
 
 #endif

@@ -3,6 +3,11 @@
 IplImage* aperture = NULL;
 double param[2]; // psfsize = param[0] * disparity + param[1]
 
+void setAperture( char filename[] );
+char apertureFilePath[3][64] 
+= { CIRCLE_PATH,
+    ZHOU_PATH,
+    MLS_PATH};
 
 /*****************************************
   プライベート関数ここから
@@ -97,9 +102,6 @@ void saveDispMap( char filename[] )
   IplImage* dst = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
   cvSetZero(dst);
 
-  double b = getBaselineLength();
-  double tfov = ( getFieldOfView() * M_PI / 360.0 );
-  double W = glDepth->width;
 
   for(int h = 0; h < dst->height; ++h){
     for( int w = 0 ; w < dst->width; ++w ){
@@ -108,7 +110,7 @@ void saveDispMap( char filename[] )
       if( depth > 127 ){
 	disp = 256/4.0;
       }else{
-	disp = (W*b)/(2.0*depth*tfov);
+	disp = disparityFromDepth(depth);
       }
 
       CV_IMAGE_ELEM( dst, uchar, h, w) = disp * 4.0;
@@ -123,17 +125,18 @@ void saveDispMap( char filename[] )
 }
 
 
-void setAperture( char filename[] )
+void setAperture( int PSF )
 {
+
   if(!aperture) cvReleaseImage(&aperture);
-  IplImage *load = cvLoadImage(filename, CV_LOAD_IMAGE_GRAYSCALE);
+  IplImage *load = cvLoadImage(apertureFilePath[PSF], CV_LOAD_IMAGE_GRAYSCALE);
   IplImage *tmp  = cvCreateImage( cvGetSize(load), IPL_DEPTH_64F, 1);
   aperture = cvCreateImage( cvSize( MAX_PSF_RADIUS, MAX_PSF_RADIUS), IPL_DEPTH_64F, 1);
 
   cvConvert( load, tmp);
   cvResize( tmp, aperture);
   cvNormalize( aperture, aperture, 1.0, 0.0, CV_L1, NULL);
-  printf("%s is loaded as aperture\n", filename);
+  printf("%s is loaded as aperture\n", apertureFilePath[PSF]);
 
   cvReleaseImage( &load );
   cvReleaseImage( &tmp );
@@ -148,8 +151,10 @@ void setDispSizeParam( double a, double b)
   printf("parameter = %lf, %lf\n", param[0], param[1]);
 }
 
-void blur(char saveFileName[])
+void blur(char saveFileName[], int apertureID)
 {
+  
+  setAperture( apertureID );
   int x,y;
   double apertureSize = getApertureSize();
   IplImage *tmp;
@@ -175,10 +180,9 @@ void blur(char saveFileName[])
       cvSaveImage( filename, tmp );
       cvFlip(tmp, tmp, 0);
 #endif
-      
+
       _ClearLine();
       printf("progress : %d %%",100*(x*PSFHeight+y)/(PSFWidth*PSFHeight));
-
 
       for(int h = 0 ; h < tmp->height; ++h){
 	for( int w = 0 ; w < tmp->width; ++w){
