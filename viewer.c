@@ -13,8 +13,8 @@ GLboolean facetNormal = GL_FALSE;
 #define VIEW_FRUSTUM 2
 GLdouble frustum[4]; // 順に left right, bottom, top
 
+// 現在使用中のカメラ
 int cam;
-
 
 //GLUI
 GLUI *glui;
@@ -341,6 +341,7 @@ void setTexture( char *filename )
 void saveParameters( char *filename )
 {
   char buf[256];
+  double par[2];
   if( filename != NULL ){
     strcpy( buf, filename );
   }else{
@@ -351,23 +352,36 @@ void saveParameters( char *filename )
     sprintf(buf, "param/%02d%02d%02d-%02d%02d.txt", 
 	    tst->tm_year-100, tst->tm_mon, tst->tm_mday, tst->tm_hour, tst->tm_min);
   }
-  /*
+
   FILE *fp = fopen( buf, "w" );
   if( fp == NULL ){
     printf("error in save parameters. cannot open file\n");
     return;
   }else{
-    fprintf( fp, "Window Size [pixel] : height = %d, width = %d\n",  winWidth, winHeight);
-    fprintf( fp, "base line length [camera corrdinate]: %lf \n", baseLine );
-    fprintf( fp, "aperture size [camera corrdinate]: %lf \n", apertureSize );
-    fprintf( fp, "fov [angle] :  %lf \n", fov);
-    fprintf( fp, "PSF Size <--> disparity param [pixel] : PSFSize = %lf * disparity + %lf\n", tBox[0]->get_float_val(), tBox[1]->get_float_val());
-    fprintf( fp, "max disparity [pixel] : %lf \n", MAX_DISPARITY);
-    fprintf( fp, "max psf size [pixel]  : %lf \n", MAX_PSF_RADIUS);
+    fprintf( fp, "common parameters\n");
+    fprintf( fp, "\tWindow Size [pixel] : height = %d, width = %d\n",  
+	     getWindowWidth(), getWindowHeight());
+    fprintf( fp, "\tbase line length [camera corrdinate]: %lf \n", getBaseLine() );
+    fprintf( fp, "\taperture size [camera corrdinate]: %lf \n", getApertureSize() );
+    fprintf( fp, "\tfov [angle] :  %lf \n", getFov());
+    fprintf( fp, "\tMAX DISPARITY : %lf\n", MAX_DISPARITY);
+    fprintf( fp, "\tMAX PSF RADIUS : %lf\n", MAX_PSF_RADIUS);
+
+    fprintf( fp, "\n\nleft camera\n");
+    fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(LEFT_CAM));
+    fprintf( fp, "\taperture patern : %d\n", getAperturePattern(LEFT_CAM));
+    getDTPParam( LEFT_CAM, par);
+    fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]);
+
+    fprintf( fp, "\n\right camera\n");
+    fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(RIGHT_CAM));
+    fprintf( fp, "\taperture patern : %d\n", getAperturePattern(RIGHT_CAM));
+    getDTPParam( RIGHT_CAM, par);
+    fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]);
 
     fclose(fp);
   }
-  */
+
 }
 
 /*----------------------------------------------------------------- 
@@ -616,5 +630,9 @@ void changeDTPParam( int id){
 void changeFocalDepth( int id )
 {
   setFocalDepth( (fdepthBox[id]->get_float_val()), id);
+  double par[2];
+  getDTPParam( id, par);
+  tBox[id][0]->set_float_val( par[0] );
+  tBox[id][1]->set_float_val( par[1] );
 }
 

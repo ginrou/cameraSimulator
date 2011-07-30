@@ -1,6 +1,55 @@
 いろいろな設定とか
 
-パラメータはすべてsettings.hに記入
+実験のパラメータはすべてsettings.hに記入
+
+各変数、パラメータについて
+cam : どのカメラを使うか
+    LEFT_CAM 左のカメラ
+    CENTER_CAM 中央のカメラ
+    RIGHT_CAM 右のカメラ
+
+f : 
+焦点距離．
+
+zoom, zoomView : 
+ズーム(1倍~10倍)．全てのカメラで同じ
+画角(40°)から計算
+
+fov:
+画角．zoomより計算される
+
+baseLine:
+基線長の長さ．
+zoom, winWidth, MAX_DISPARITYに依存
+
+winWidth, winHeight : 
+ウィンドウの大きさ
+
+eye:
+カメラの視点．基線長に依存
+中央のカメラは原点にあり，
+左のカメラは 基線長/2 だけ左に
+右のカメラは 基線長/2 だけ右に
+それぞれ平行移動した所のある
+
+FocalDepth:
+カメラの焦点のあっている奥行き．
+それぞれのカメラによって異なる
+
+aperturePattern:
+開口形状
+
+apertureSize:
+開口径．全てのカメラで同じ
+MAX_PSF_RADIUS, zMin, zMax, winWidth, zoomに依存する
+
+DTPParam:
+Disparity To Psfsize Parameter
+視差とPSFサイズを変換するパラメータ
+左右のカメラで異なる
+PSFSize = disparity * DTPParam[0] + DTPParam[1]
+
+
 
 
 使った式
