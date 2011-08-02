@@ -350,7 +350,7 @@ void saveParameters( char *filename )
     time(&timer);
     tst = localtime(&timer);
     sprintf(buf, "param/%02d%02d%02d-%02d%02d.txt", 
-	    tst->tm_year-100, tst->tm_mon, tst->tm_mday, tst->tm_hour, tst->tm_min);
+	    tst->tm_year-100, tst->tm_mon+1, tst->tm_mday, tst->tm_hour, tst->tm_min);
   }
 
   FILE *fp = fopen( buf, "w" );
