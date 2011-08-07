@@ -1,8 +1,8 @@
 #ifndef __SETTINGS__
 #define __SETTINGS__
 
-#define MAX_PSF_RADIUS 32.0
-#define MAX_DISPARITY 32.0
+#define MAX_PSF_RADIUS 16.0
+#define MAX_DISPARITY 48.0
 #define Z_MAX 128.0
 
 #define WINDOW_WIDTH 512

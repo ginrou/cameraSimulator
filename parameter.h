@@ -23,6 +23,8 @@ void setWindowSize( int width, int height);
 void setEye( double val[3], int cam);
 void setFocalDepth( double val, int cam);
 void setAperturePattern(int val, int cam);
+void setApertureSize( double val );
+void setBaseLine( double val);
 
 //getter
 double getFov(void);
@@ -35,6 +37,9 @@ void   getDTPParam( int cam , double dst[]);
 int    getWindowWidth(void);
 int    getWindowHeight(void);
 double getFLength(void);
+int    getMaxDisparity(void);
+int    getMaxPSFSize(void);
+
 //convert
 double disparityFromDepth( double depth );
 

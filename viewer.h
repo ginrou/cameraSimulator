@@ -30,9 +30,10 @@ void saveParameters( char *filename ); //if filename is NULL saved in yyddmm-ttm
 
 //return value : IPL_DEPTH_32F, BGRA
 IplImage* readPixel(void); //normalize between 0 and 1
+IplImage* readPixelAtEye( double x, double y);
 IplImage* readDepthBuffer(void); // clipped from -128 to -1 (カメラ座標系)
 
-IplImage* readPixelAtEye( double x, double y);
+
 
 
 //private method
@@ -58,6 +59,8 @@ void changeCamera( int num);
 
 void changeZoom(int id);
 void changePSF( int id);
+void changeBaseLine( int id);
+void changeApertureSize( int id);
 void changeDTPParam( int id );
 void changeFocalDepth( int id );
 

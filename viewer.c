@@ -154,8 +154,8 @@ void initViewer(int argc, char* argv[])
 
   //center camera
   GLUI_Panel* ccamPanel = glui->add_panel_to_panel( paramPanel, "center" );
-  baseLineBox = glui->add_edittext_to_panel(ccamPanel, "base line:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
-  apertureSizeBox = glui->add_edittext_to_panel(ccamPanel, "aperture size:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeDTPParam);
+  baseLineBox = glui->add_edittext_to_panel(ccamPanel, "base line:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeBaseLine);
+  apertureSizeBox = glui->add_edittext_to_panel(ccamPanel, "aperture size:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeApertureSize);
   glui->add_column_to_panel( paramPanel, true);
 
   //right camera
@@ -364,8 +364,8 @@ void saveParameters( char *filename )
     fprintf( fp, "\tbase line length [camera corrdinate]: %lf \n", getBaseLine() );
     fprintf( fp, "\taperture size [camera corrdinate]: %lf \n", getApertureSize() );
     fprintf( fp, "\tfov [angle] :  %lf \n", getFov());
-    fprintf( fp, "\tMAX DISPARITY : %lf\n", MAX_DISPARITY);
-    fprintf( fp, "\tMAX PSF RADIUS : %lf\n", MAX_PSF_RADIUS);
+    fprintf( fp, "\tMAX DISPARITY : %d\n", getMaxDisparity());
+    fprintf( fp, "\tMAX PSF RADIUS : %d\n", getMaxPSFSize());
 
     fprintf( fp, "\n\nleft camera\n");
     fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(LEFT_CAM));
@@ -373,7 +373,7 @@ void saveParameters( char *filename )
     getDTPParam( LEFT_CAM, par);
     fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]);
 
-    fprintf( fp, "\n\right camera\n");
+    fprintf( fp, "\nright camera\n");
     fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(RIGHT_CAM));
     fprintf( fp, "\taperture patern : %d\n", getAperturePattern(RIGHT_CAM));
     getDTPParam( RIGHT_CAM, par);
@@ -618,9 +618,9 @@ void changeZoom(int id)
   setPerspective(id);
 }
 
-void changePSF( int id)
+void changePSF( int camID)
 {
-  setAperturePattern( listBoxVar[cam], id);
+  setAperturePattern( listBoxVar[camID], camID);
 }
 
 void changeDTPParam( int id){
@@ -636,3 +636,12 @@ void changeFocalDepth( int id )
   tBox[id][1]->set_float_val( par[1] );
 }
 
+void changeBaseLine( int id)
+{
+  setBaseLine( baseLineBox->get_float_val() );
+}
+
+void changeApertureSize( int id)
+{
+  setApertureSize( apertureSizeBox->get_float_val());
+}

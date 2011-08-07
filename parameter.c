@@ -15,7 +15,7 @@ double apertureSize; // カメラの開口径
 double DTPparam[CAM_NUM][2]; // PSFSize <--> 視差 の変換パラメータ
 
 
-double tmf;
+double tmf; // = tan ( FOVの最小値 ) : zoomが変化しても一定値をとるので
 
 //init
 void initParam(void)
@@ -31,6 +31,8 @@ void initParam(void)
     apertureSize 
       = 2.0 * MAX_PSF_RADIUS * zMin * zMax * tmf / ( (zMax - zMin) * (double)winWidth * zoom);
   }
+
+  baseLine = MAX_DISPARITY * 2.0 * tmf / (zoom * (double)winWidth );
 
   // 最も近い所にピントを合わせる
   focalDepth[LEFT_CAM] = zMin;
@@ -49,13 +51,23 @@ void initParam(void)
 
 //setter
 void setZoom(double val)
-{ zoom = val;
-  eye[LEFT_CAM][0] = -getBaseLine()/2.0;
-  eye[RIGHT_CAM][0] = getBaseLine()/2.0;
+{ 
+  double prevZoom = zoom;
+  zoom = val;
+  baseLine *= (prevZoom / zoom );
+  apertureSize *= (prevZoom / zoom );
+  eye[LEFT_CAM][0] = -baseLine / 2.0;
+  eye[RIGHT_CAM][0] = baseLine / 2.0;
 }
 
 void setWindowSize( int width, int height)
-{  winWidth = width;  winHeight = height;}
+{ 
+  int prevWinWidth = winWidth;
+  winWidth = width;  
+  winHeight = height;
+  baseLine *= ( (double)prevWinWidth / (double)winWidth );
+  apertureSize *= ( (double)prevWinWidth / (double)winWidth );
+}
 
 void setEye( double val[3], int cam)
 {  eye[cam][0] = val[0];  eye[cam][1] = val[1];  eye[cam][2] = val[2];}
@@ -66,7 +78,11 @@ void setFocalDepth( double val, int cam)
 void setAperturePattern(int val, int cam)
 {  aperturePattern[cam] = val;}
 
+void setApertureSize( double val )
+{ apertureSize = val;}
 
+void setBaseLine( double val)
+{ baseLine = val;}
 
 
 
@@ -78,32 +94,22 @@ double getFov(void)
 }
 
 double getBaseLine(void)
-{
-  return baseLine 
-    = MAX_DISPARITY * 2.0 * tmf / (zoom * (double)winWidth);
-}
+{  return baseLine; }
 
 void getEye( int cam , double dst[])
 {
-
   dst[0] = eye[cam][0];  dst[1] = eye[cam][1];  dst[2] = eye[cam][2];
 }
 
 double getFocalDepth( int cam )
-{
-  return focalDepth[cam];
-}
+{  return focalDepth[cam]; }
 
 
 int getAperturePattern( int cam )
-{
-  return aperturePattern[cam];
-}
+{  return aperturePattern[cam]; }
 
 double getApertureSize(void)
-{
-  return apertureSize;
-}
+{  return apertureSize; }
 
 void getDTPParam( int cam , double dst[])
 {
@@ -113,22 +119,33 @@ void getDTPParam( int cam , double dst[])
   dst[1] = DTPparam[cam][1] = -DTPparam[cam][0] * disp ;
 }
 
-double disparityFromDepth( double depth )
-{
-  return (double)winWidth*baseLine/(2.0*depth*tmf/zoom);
-}
+int getWindowWidth(void)
+{  return winWidth; }
 
-int    getWindowWidth(void)
-{
-  return winWidth;
-}
-
-int    getWindowHeight(void)
-{
-  return winHeight;
-}
+int getWindowHeight(void)
+{  return winHeight; }
 
 double getFLength(void)
+{  return f; }
+
+int getMaxDisparity(void)
+{  return baseLine * zoom * (double)winWidth / ( 2.0 * tmf ); }
+
+int getMaxPSFSize(void)
 {
-  return f;
+  double zMin, zMax;
+  IplImage *zBuffer = readDepthBuffer();
+  if(zBuffer != NULL ){
+    cvConvertScale( zBuffer, zBuffer, -1.0, 0.0 );
+    cvMinMaxLoc( zBuffer, &zMin, &zMax, NULL, NULL, NULL);
+    cvReleaseImage(&zBuffer);
+    return apertureSize * (zMax - zMin) * (double)winWidth * zoom / ( 2.0 * zMin * zMax * tmf ) + 1.0;
+  }
+  return -1;
 }
+
+
+// convert
+double disparityFromDepth( double depth )
+{  return (double)winWidth*baseLine/(2.0*depth*tmf/zoom); }
+

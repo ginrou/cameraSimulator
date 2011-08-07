@@ -197,7 +197,9 @@ void blur(char saveFileName[], int apertureID)
     }
   }
 
-  printf("finished\n");
+
+  _ClearLine();
+  printf("progress : 100 %%\n");
 
   cvFlip( img, NULL, 0);
   cvSaveImage( saveFileName, img );
