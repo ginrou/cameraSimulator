@@ -13,21 +13,27 @@
 //#define __DEBUG__ 1
 
 //file path
-#define OBJECT_FILE_PATH "object/blocks.obj"
-#define TEXTURE_FILE_PATH "object/wood.png"
+#define OBJECT_FILE_PATH "object/research.obj"
+#define TEXTURE_FILE_PATH "object/texture2.png"
 
 //image file path
-#define DEPTH_BUFFER "depth.png"
-#define SCREAN_IAMGE "center.png"
-#define DISPARITY_MAP "disparityMap.png"
+#define DEPTH_BUFFER "img/depth.png"
+#define SCREAN_IAMGE "img/center.png"
+#define DISPARITY_MAP "img/disparityMap.png"
+#define STEREO_LEFT  "img/stereoLeft.png"
+#define STEREO_RIGHT "img/stereoRight.png"
+#define BLURRED      "img/blurred.png"
+#define BLURRED_LEFT "img/blurredLeft.png"
+#define BLURRED_RIGHT "img/blurredRight.png"
+
 
 //Aperture Pattern Path
 #define CIRCLE 0
-#define CIRCLE_PATH "images/circle.png"
+#define CIRCLE_PATH "aperture/circle.png"
 #define ZHOU 1
-#define ZHOU_PATH "images/Zhou0002.png"
+#define ZHOU_PATH "aperture/Zhou0002.png"
 #define MLS 2
-#define MLS_PATH "images/MLS.png"
+#define MLS_PATH "aperture/MLS.png"
 
 #define INIT_APERTURE CIRCLE
 

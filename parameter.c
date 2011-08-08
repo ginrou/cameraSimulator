@@ -82,7 +82,10 @@ void setApertureSize( double val )
 { apertureSize = val;}
 
 void setBaseLine( double val)
-{ baseLine = val;}
+{ baseLine = val;
+  eye[LEFT_CAM][0] = -baseLine / 2.0;
+  eye[RIGHT_CAM][0] = baseLine / 2.0;
+}
 
 
 

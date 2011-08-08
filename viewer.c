@@ -16,7 +16,7 @@ GLdouble frustum[4]; // 順に left right, bottom, top
 // 現在使用中のカメラ
 int cam;
 
-//GLUI
+//GLUIで使用しているインタフェース
 GLUI *glui;
 GLUI_Rotation *objRot;
 
@@ -26,6 +26,8 @@ GLUI_EditText* tBox[CAM_NUM][2];// DTPParamの値
 GLUI_EditText* fdepthBox[CAM_NUM];// 焦点位置
 GLUI_EditText* baseLineBox; // 基線長
 GLUI_EditText* apertureSizeBox; // 開口径
+GLUI_StaticText* maxDisparityText; // 最大視差
+GLUI_StaticText* maxPSFText; // 最大PSF径
 
 
 //Rotation matrix in glui
@@ -156,6 +158,8 @@ void initViewer(int argc, char* argv[])
   GLUI_Panel* ccamPanel = glui->add_panel_to_panel( paramPanel, "center" );
   baseLineBox = glui->add_edittext_to_panel(ccamPanel, "base line:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeBaseLine);
   apertureSizeBox = glui->add_edittext_to_panel(ccamPanel, "aperture size:", GLUI_EDITTEXT_FLOAT, NULL, 0, changeApertureSize);
+  maxDisparityText = glui->add_statictext_to_panel( ccamPanel, "max disparity :  ");
+  maxPSFText = glui->add_statictext_to_panel( ccamPanel, "max PSF :  ");
   glui->add_column_to_panel( paramPanel, true);
 
   //right camera
@@ -569,21 +573,22 @@ void takeBlurredImage( int num )
 {
   if(cam == CENTER_CAM) changeCamera( LEFT_CAM );
   saveParameters(NULL); 
-  blur((char*)"blurred.png" , getAperturePattern(cam) );
+  blur((char*)BLURRED , getAperturePattern(cam) );
 }
 
 void takeStereoImage( int num )
 {
+  int prevCam = cam;
   saveParameters(NULL);
   cam = LEFT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  saveImage( (char*)"left.png" );
+  saveImage( (char*)STEREO_LEFT );
 
   cam = RIGHT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  saveImage( (char*)"right.png" );
+  saveImage( (char*)STEREO_RIGHT );
 
-  cam = CENTER_CAM;
+  cam = prevCam;
   setPerspective(VIEW_PERSPECTIVE);
 }
 
@@ -593,11 +598,11 @@ void takeStereoBlurredImage( int num )
   
   cam = LEFT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  blur( (char*)"blurredLeft.png", getAperturePattern(cam));
+  blur( (char*)BLURRED_LEFT, getAperturePattern(cam));
 
   cam = RIGHT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  blur( (char*)"blurredRight.png", getAperturePattern(cam));
+  blur( (char*)BLURRED_RIGHT, getAperturePattern(cam));
   
   cam = CENTER_CAM;
   setPerspective(VIEW_PERSPECTIVE);
@@ -615,6 +620,13 @@ void changeZoom(int id)
   setZoom(zoomView);
   baseLineBox->set_float_val( getBaseLine() );
   apertureSizeBox->set_float_val( getApertureSize() );  
+
+  char buf[256];
+  sprintf( buf, "max disparity : %d", getMaxDisparity());
+  maxDisparityText->set_text( buf );
+  sprintf( buf, "max PSF : %d", getMaxPSFSize());
+  maxPSFText->set_text(buf);
+
   setPerspective(id);
 }
 
@@ -639,9 +651,28 @@ void changeFocalDepth( int id )
 void changeBaseLine( int id)
 {
   setBaseLine( baseLineBox->get_float_val() );
+  printf("base line = %lf\n", getBaseLine());
+  char buf[256];
+  sprintf( buf, "max disparity : %d", getMaxDisparity());
+  maxDisparityText->set_text( buf );
+
 }
 
 void changeApertureSize( int id)
 {
   setApertureSize( apertureSizeBox->get_float_val());
+  char buf[256];
+  sprintf( buf, "max PSF : %d", getMaxPSFSize());
+  maxPSFText->set_text(buf);
+
+  double par[2];
+  getDTPParam( LEFT_CAM, par);
+  tBox[LEFT_CAM][0]->set_float_val( par[0] );
+  tBox[LEFT_CAM][1]->set_float_val( par[1] );
+  getDTPParam( RIGHT_CAM, par);
+  tBox[RIGHT__CAM][0]->set_float_val( par[0] );
+  tBox[RIGHT_CAM][1]->set_float_val( par[1] );
+
+  
+
 }
