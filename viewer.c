@@ -171,8 +171,8 @@ void initViewer(int argc, char* argv[])
   //focal distance
   fdepthBox[RIGHT_CAM] = glui->add_edittext_to_panel(rcamPanel, "focal distance:", GLUI_EDITTEXT_FLOAT, NULL, RIGHT_CAM, changeFocalDepth);
   //DTPparam
-  tBox[LEFT_CAM][0] = glui->add_edittext_to_panel(rcamPanel, "a:", GLUI_EDITTEXT_FLOAT, NULL, LEFT_CAM, changeDTPParam);
-  tBox[LEFT_CAM][1] = glui->add_edittext_to_panel(rcamPanel, "b:", GLUI_EDITTEXT_FLOAT, NULL, LEFT_CAM, changeDTPParam);
+  tBox[RIGHT_CAM][0] = glui->add_edittext_to_panel(rcamPanel, "a:", GLUI_EDITTEXT_FLOAT, NULL, RIGHT_CAM, changeDTPParam);
+  tBox[RIGHT_CAM][1] = glui->add_edittext_to_panel(rcamPanel, "b:", GLUI_EDITTEXT_FLOAT, NULL, RIGHT_CAM, changeDTPParam);
   
 
   initParam();
@@ -434,9 +434,9 @@ void mouse( int button, int state, int x, int y)
   if( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && cam != CENTER_CAM){
     IplImage *depthBuffer = readDepthBuffer();
     float depth = - CV_IMAGE_ELEM( depthBuffer, float, getWindowHeight()-y, x);
-    setFocalDepth( depth, cam);
     cvReleaseImage( &depthBuffer);
-    fdepthBox[cam]->set_float_val( getFocalDepth( cam ) );
+    fdepthBox[cam]->set_float_val( depth );
+    changeFocalDepth( cam );
     printf("change focuced distance of camera %d as %f\n", cam, depth);
     setPerspective(VIEW_PERSPECTIVE );
   }
@@ -669,10 +669,9 @@ void changeApertureSize( int id)
   getDTPParam( LEFT_CAM, par);
   tBox[LEFT_CAM][0]->set_float_val( par[0] );
   tBox[LEFT_CAM][1]->set_float_val( par[1] );
-  getDTPParam( RIGHT_CAM, par);
-  tBox[RIGHT__CAM][0]->set_float_val( par[0] );
-  tBox[RIGHT_CAM][1]->set_float_val( par[1] );
 
-  
+  getDTPParam( RIGHT_CAM, par);
+  tBox[RIGHT_CAM][0]->set_float_val( par[0] );
+  tBox[RIGHT_CAM][1]->set_float_val( par[1] );
 
 }
