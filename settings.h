@@ -1,8 +1,8 @@
 #ifndef __SETTINGS__
 #define __SETTINGS__
 
-#define MAX_PSF_RADIUS 16.0
-#define MAX_DISPARITY 48.0
+#define MAX_PSF_RADIUS 24.0
+#define MAX_DISPARITY 20.0
 #define Z_MAX 128.0
 
 #define WINDOW_WIDTH 512
@@ -13,8 +13,8 @@
 //#define __DEBUG__ 1
 
 //file path
-#define OBJECT_FILE_PATH "object/research.obj"
-#define TEXTURE_FILE_PATH "object/texture2.png"
+#define OBJECT_FILE_PATH "object/blocks.obj"
+#define TEXTURE_FILE_PATH "object/texture.png"
 
 //image file path
 #define DEPTH_BUFFER "img/depth.png"

@@ -118,7 +118,7 @@ void getDTPParam( int cam , double dst[])
 {
   dst[0] = DTPparam[cam][0] = apertureSize / baseLine;
   dst[1] = DTPparam[cam][1] 
-    = (double)winWidth * apertureSize / (2.0 * focalDepth[cam] * tmf / zoom );
+    = -(double)winWidth * apertureSize / (2.0 * focalDepth[cam] * tmf / zoom );
 }
 
 int getWindowWidth(void)
