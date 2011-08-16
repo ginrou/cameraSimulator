@@ -4,10 +4,12 @@ IplImage* aperture = NULL;
 double param[2]; // psfsize = param[0] * disparity + param[1]
 
 void setAperture( char filename[] );
-char apertureFilePath[3][64] 
+char apertureFilePath[5][64] 
 = { CIRCLE_PATH,
     ZHOU_PATH,
-    MLS_PATH};
+    MLS_PATH,
+    CAPAIR1_PATH,
+    CAPAIR2_PATH  };
 
 /*****************************************
   プライベート関数ここから

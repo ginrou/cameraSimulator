@@ -147,6 +147,9 @@ void initViewer(int argc, char* argv[])
   listBox->add_item( 0, "circle" );
   listBox->add_item( 1, "Zhou" );
   listBox->add_item( 2, "MLS" );
+  listBox->add_item( 3, "CA pair 1");
+  listBox->add_item( 4, "CA pair 2");
+
   //focal distance
   fdepthBox[LEFT_CAM] = glui->add_edittext_to_panel(lcamPanel, "focal distance:", GLUI_EDITTEXT_FLOAT, NULL, LEFT_CAM, changeFocalDepth);
   //DTPparam
@@ -168,6 +171,10 @@ void initViewer(int argc, char* argv[])
   listBox->add_item( 0, "circle" );
   listBox->add_item( 1, "Zhou" );
   listBox->add_item( 2, "MLS" );
+  listBox->add_item( 3, "CA pair 1");
+  listBox->add_item( 4, "CA pair 2");
+
+
   //focal distance
   fdepthBox[RIGHT_CAM] = glui->add_edittext_to_panel(rcamPanel, "focal distance:", GLUI_EDITTEXT_FLOAT, NULL, RIGHT_CAM, changeFocalDepth);
   //DTPparam
@@ -636,7 +643,11 @@ void changePSF( int camID)
 }
 
 void changeDTPParam( int id){
-  // 何もしない
+
+  char buf[256];
+  sprintf( buf, "max PSF : %d", getMaxPSFSize());
+  maxPSFText->set_text(buf);
+
 }
 
 void changeFocalDepth( int id )
@@ -646,6 +657,11 @@ void changeFocalDepth( int id )
   getDTPParam( id, par);
   tBox[id][0]->set_float_val( par[0] );
   tBox[id][1]->set_float_val( par[1] );
+
+  char buf[256];
+  sprintf( buf, "max PSF : %d", getMaxPSFSize());
+  maxPSFText->set_text(buf);
+
 }
 
 void changeBaseLine( int id)
@@ -661,9 +677,6 @@ void changeBaseLine( int id)
 void changeApertureSize( int id)
 {
   setApertureSize( apertureSizeBox->get_float_val());
-  char buf[256];
-  sprintf( buf, "max PSF : %d", getMaxPSFSize());
-  maxPSFText->set_text(buf);
 
   double par[2];
   getDTPParam( LEFT_CAM, par);
@@ -673,5 +686,9 @@ void changeApertureSize( int id)
   getDTPParam( RIGHT_CAM, par);
   tBox[RIGHT_CAM][0]->set_float_val( par[0] );
   tBox[RIGHT_CAM][1]->set_float_val( par[1] );
+
+  char buf[256];
+  sprintf( buf, "max PSF : %d", getMaxPSFSize());
+  maxPSFText->set_text(buf);
 
 }

@@ -13,7 +13,7 @@
 //#define __DEBUG__ 1
 
 //file path
-#define OBJECT_FILE_PATH "object/blocks.obj"
+#define OBJECT_FILE_PATH "object/research.obj"
 #define TEXTURE_FILE_PATH "object/texture.png"
 
 //image file path
@@ -34,6 +34,11 @@
 #define ZHOU_PATH "aperture/Zhou0002.png"
 #define MLS 2
 #define MLS_PATH "aperture/MLS.png"
+#define CAPAIR1 3
+#define CAPAIR1_PATH "aperture/CAPair1.png"
+#define CAPAIR2 4
+#define CAPAIR2_PATH "aperture/CAPair2.png"
+
 
 #define INIT_APERTURE CIRCLE
 

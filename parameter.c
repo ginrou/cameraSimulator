@@ -135,15 +135,33 @@ int getMaxDisparity(void)
 
 int getMaxPSFSize(void)
 {
-  double zMin, zMax;
+  double maxDisparity;
+  double minDisparity;
   IplImage *zBuffer = readDepthBuffer();
   if(zBuffer != NULL ){
+    double near, far;
     cvConvertScale( zBuffer, zBuffer, -1.0, 0.0 );
-    cvMinMaxLoc( zBuffer, &zMin, &zMax, NULL, NULL, NULL);
+    cvMinMaxLoc( zBuffer, &near, &far, NULL, NULL, NULL);
+    maxDisparity = disparityFromDepth(near);
+    minDisparity = disparityFromDepth(far);
     cvReleaseImage(&zBuffer);
-    return apertureSize * (zMax - zMin) * (double)winWidth * zoom / ( 2.0 * zMin * zMax * tmf ) + 1.0;
+  }  
+
+
+  double size[4];
+  size[0] = fabs( DTPparam[LEFT_CAM][0] * maxDisparity + DTPparam[LEFT_CAM][1] );
+  size[1] = fabs( DTPparam[LEFT_CAM][0] * minDisparity + DTPparam[LEFT_CAM][1] );
+  size[2] = fabs( DTPparam[RIGHT_CAM][0] * maxDisparity + DTPparam[RIGHT_CAM][1] );
+  size[3] = fabs( DTPparam[RIGHT_CAM][0] * minDisparity + DTPparam[RIGHT_CAM][1] );
+
+  double max = 0.0;
+  for(int i = 0; i < 4; ++i){
+    if( max < size[i]) max = size[i];
   }
-  return -1;
+
+
+  return max;
+
 }
 
 
