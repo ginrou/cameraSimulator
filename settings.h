@@ -14,7 +14,7 @@
 
 //file path
 #define OBJECT_FILE_PATH "object/research.obj"
-#define TEXTURE_FILE_PATH "object/texture.png"
+#define TEXTURE_FILE_PATH "object/texture-tile.png"
 
 //image file path
 #define DEPTH_BUFFER "img/depth.png"

@@ -104,7 +104,6 @@ void saveDispMap( char filename[] )
   IplImage* dst = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
   cvSetZero(dst);
 
-
   for(int h = 0; h < dst->height; ++h){
     for( int w = 0 ; w < dst->width; ++w ){
       double depth = -CV_IMAGE_ELEM( glDepth, float, h, w);
@@ -115,7 +114,7 @@ void saveDispMap( char filename[] )
 	disp = disparityFromDepth(depth);
       }
 
-      CV_IMAGE_ELEM( dst, uchar, h, w) = disp * 4.0;
+      CV_IMAGE_ELEM( dst, uchar, h, w) = disp;
 
     }
   }
@@ -174,6 +173,7 @@ void blur(char saveFileName[], int apertureID)
 			    apertureSize*(double)(y-PSFHeight/2)/(double)PSFHeight);
 
       cvConvertScale( tmp, tmp, 255.0, 0.0);
+      cvFlip( tmp, NULL, 0);
 
 #ifdef __DEBUG__
       cvFlip(tmp, tmp, 0);
@@ -202,8 +202,6 @@ void blur(char saveFileName[], int apertureID)
 
   _ClearLine();
   printf("progress : 100 %%\n");
-
-  cvFlip( img, NULL, 0);
   cvSaveImage( saveFileName, img );
 
   return;

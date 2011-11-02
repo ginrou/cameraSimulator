@@ -360,7 +360,7 @@ void saveParameters( char *filename )
     struct tm* tst;
     time(&timer);
     tst = localtime(&timer);
-    sprintf(buf, "param/%02d%02d%02d-%02d%02d.txt", 
+    sprintf(buf, "img/%02d%02d%02d-%02d%02d.txt", 
 	    tst->tm_year-100, tst->tm_mon+1, tst->tm_mday, tst->tm_hour, tst->tm_min);
   }
 
@@ -580,6 +580,7 @@ void takeBlurredImage( int num )
 {
   if(cam == CENTER_CAM) changeCamera( LEFT_CAM );
   saveParameters(NULL); 
+  setPerspective(VIEW_PERSPECTIVE);
   blur((char*)BLURRED , getAperturePattern(cam) );
 }
 
@@ -692,3 +693,4 @@ void changeApertureSize( int id)
   maxPSFText->set_text(buf);
 
 }
+
