@@ -88,7 +88,8 @@ void saveDepthMap(char filename[] )
   IplImage* glDepth = readDepthBuffer();
 
   IplImage* depth = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
-  cvConvertScale( glDepth, depth, -32.0, -1.0);
+
+  cvConvertScale( glDepth, depth, 32.0, 0.0);
   cvFlip( depth, NULL, 0);
   cvSaveImage( filename, depth);
   
@@ -104,18 +105,16 @@ void saveDispMap( char filename[] )
   IplImage* dst = cvCreateImage( cvGetSize(glDepth), IPL_DEPTH_8U, 1);
   cvSetZero(dst);
 
+  double f = getFLength();
+
   for(int h = 0; h < dst->height; ++h){
     for( int w = 0 ; w < dst->width; ++w ){
-      double depth = -CV_IMAGE_ELEM( glDepth, float, h, w);
+      double depth = CV_IMAGE_ELEM( glDepth, float, h, w) ;
       double disp;
-      if( depth > 127 ){
-	disp = 256/4.0;
-      }else{
-	disp = disparityFromDepth(depth);
-      }
-
+      disp = disparityFromDepth(depth);
       CV_IMAGE_ELEM( dst, uchar, h, w) = disp;
-
+      if( depth < 120 && h % 4 ==0 && w %4 == 0)
+	printf("%3d, %3d, depth = %lf disp = %lf\n", h, w, depth,  disp);
     }
   }
   

@@ -301,23 +301,51 @@ IplImage* readDepthBuffer(void)
 {
   int winWidth = getWindowWidth();
   int winHeight = getWindowHeight();
+  IplImage* depth = cvCreateImage( cvSize( winWidth, winHeight), IPL_DEPTH_32F, 1);
+
+
   float* zBuffer = (float*)malloc( sizeof(float) * winWidth * winHeight);
   glReadPixels( 0, 0, winWidth, winHeight,
 		GL_DEPTH_COMPONENT, GL_FLOAT, zBuffer);
-  
-  IplImage* depth = cvCreateImage( cvSize( winWidth, winHeight), IPL_DEPTH_32F, 1);
   float n = getFLength();
   float far = Z_MAX;
-
+  /*
   for( int h = 0; h < winHeight; ++h){
     for( int w = 0; w < winWidth; ++w){
       float z = far*n / ( (far-n)*zBuffer[h*winWidth+w] - far);
       CV_IMAGE_ELEM(depth, float, h, w) = z;
     }
   }
-
-
   free(zBuffer);
+  */
+
+  GLdouble model[16]={
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0  };
+  GLdouble proj[16];
+  GLint view[4];
+  GLfloat z;
+  GLdouble ox, oy, oz;
+  
+  //glGetDoublev( GL_MODELVIEW_MATRIX, model);
+  glGetDoublev( GL_PROJECTION_MATRIX, proj);
+  glGetIntegerv( GL_VIEWPORT, view);
+
+  for( int h = 0; h < winHeight; ++h){
+    for( int w = 0; w < winWidth; ++w){
+      z = zBuffer[h*winWidth+w];
+      gluUnProject( w, winHeight-h, z, model, proj, view, &ox, &oy, &oz );
+      CV_IMAGE_ELEM( depth, float, h, w) = oz;
+
+      /*
+      if( h%16 == 0 && w%16 == 0)
+	printf("(%3d, %3d) -> %lf, %lf, %lf\n", h, w, ox, oy, oz);
+      */
+    }
+  }
+  cvConvertScale( depth, depth, -1.0, 0.0 );
 
   return depth;
 
@@ -543,7 +571,7 @@ void setPerspective(int viewMode)
 
   glMatrixMode( GL_MODELVIEW );
   glLoadIdentity();
-  glTranslatef( 0.0, 0.0, -3.0 );
+  glTranslatef( 0.0, 0.0, -6.0 );
 
   // translation for blurring image & stereo image
   double eye[3];

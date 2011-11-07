@@ -21,7 +21,7 @@ double tmf; // = tan ( FOVの最小値 ) : zoomが変化しても一定値をと
 void initParam(void)
 {
   zoom = 1.0;
-  tmf = tan(MIN_FOV*M_PI/180.0);
+  tmf = tan(MIN_FOV*M_PI/360.0);
 
   double zMin, zMax;
   IplImage *zBuffer = readDepthBuffer();
