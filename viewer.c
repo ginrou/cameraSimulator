@@ -41,6 +41,8 @@ GLfloat rotMat[16] = {
 //Translation matrix
 GLfloat shift[2] = {0.1, 0.1};
 
+// saved image count
+int savedImageCount = 0;
 
 
 void initViewer(int argc, char* argv[])
@@ -309,15 +311,6 @@ IplImage* readDepthBuffer(void)
 		GL_DEPTH_COMPONENT, GL_FLOAT, zBuffer);
   float n = getFLength();
   float far = Z_MAX;
-  /*
-  for( int h = 0; h < winHeight; ++h){
-    for( int w = 0; w < winWidth; ++w){
-      float z = far*n / ( (far-n)*zBuffer[h*winWidth+w] - far);
-      CV_IMAGE_ELEM(depth, float, h, w) = z;
-    }
-  }
-  free(zBuffer);
-  */
 
   GLdouble model[16]={
     1.0, 0.0, 0.0, 0.0,
@@ -329,7 +322,6 @@ IplImage* readDepthBuffer(void)
   GLfloat z;
   GLdouble ox, oy, oz;
   
-  //glGetDoublev( GL_MODELVIEW_MATRIX, model);
   glGetDoublev( GL_PROJECTION_MATRIX, proj);
   glGetIntegerv( GL_VIEWPORT, view);
 
@@ -338,11 +330,6 @@ IplImage* readDepthBuffer(void)
       z = zBuffer[h*winWidth+w];
       gluUnProject( w, winHeight-h, z, model, proj, view, &ox, &oy, &oz );
       CV_IMAGE_ELEM( depth, float, h, w) = oz;
-
-      /*
-      if( h%16 == 0 && w%16 == 0)
-	printf("(%3d, %3d) -> %lf, %lf, %lf\n", h, w, ox, oy, oz);
-      */
     }
   }
   cvConvertScale( depth, depth, -1.0, 0.0 );
@@ -381,6 +368,7 @@ void saveParameters( char *filename )
 {
   char buf[256];
   double par[2];
+  static double prevParam[2];
   if( filename != NULL ){
     strcpy( buf, filename );
   }else{
@@ -397,27 +385,54 @@ void saveParameters( char *filename )
     printf("error in save parameters. cannot open file\n");
     return;
   }else{
-    fprintf( fp, "common parameters\n");
-    fprintf( fp, "\tWindow Size [pixel] : height = %d, width = %d\n",  
-	     getWindowWidth(), getWindowHeight());
-    fprintf( fp, "\tbase line length [camera corrdinate]: %lf \n", getBaseLine() );
-    fprintf( fp, "\taperture size [camera corrdinate]: %lf \n", getApertureSize() );
-    fprintf( fp, "\tfov [angle] :  %lf \n", getFov());
-    fprintf( fp, "\tMAX DISPARITY : %d\n", getMaxDisparity());
-    fprintf( fp, "\tMAX PSF RADIUS : %d\n", getMaxPSFSize());
 
-    fprintf( fp, "\n\nleft camera\n");
-    fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(LEFT_CAM));
-    fprintf( fp, "\taperture patern : %d\n", getAperturePattern(LEFT_CAM));
-    getDTPParam( LEFT_CAM, par);
-    fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]);
+    /* fprintf( fp, "common parameters\n"); */
+    /* fprintf( fp, "\tWindow Size [pixel] : height = %d, width = %d\n",   */
+    /* 	     getWindowWidth(), getWindowHeight()); */
+    /* fprintf( fp, "\tbase line length [camera corrdinate]: %lf \n", getBaseLine() ); */
+    /* fprintf( fp, "\taperture size [camera corrdinate]: %lf \n", getApertureSize() ); */
+    /* fprintf( fp, "\tfov [angle] :  %lf \n", getFov()); */
+    /* fprintf( fp, "\tMAX DISPARITY : %d\n", getMaxDisparity()); */
+    /* fprintf( fp, "\tMAX PSF RADIUS : %d\n", getMaxPSFSize()); */
 
-    fprintf( fp, "\nright camera\n");
-    fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(RIGHT_CAM));
-    fprintf( fp, "\taperture patern : %d\n", getAperturePattern(RIGHT_CAM));
-    getDTPParam( RIGHT_CAM, par);
-    fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]);
+    /* fprintf( fp, "\n\nleft camera\n"); */
+    /* fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(LEFT_CAM)); */
+    /* fprintf( fp, "\taperture patern : %d\n", getAperturePattern(LEFT_CAM)); */
+    /* getDTPParam( LEFT_CAM, par); */
+    /* fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]); */
 
+    /* fprintf( fp, "\nright camera\n"); */
+    /* fprintf( fp, "\tfocal depth : %lf \n", getFocalDepth(RIGHT_CAM)); */
+    /* fprintf( fp, "\taperture patern : %d\n", getAperturePattern(RIGHT_CAM)); */
+    /* getDTPParam( RIGHT_CAM, par); */
+    /* fprintf( fp, "\tDTPParam : PSFSize = %lf * disparity + %lf\n", par[0], par[1]); */
+
+
+    fprintf( fp, "%d\n", savedImageCount);
+    savedImageCount++;
+    fprintf( fp, "%s-%02d.png\n", IMAGE_LEFT_HEADER, savedImageCount);
+    fprintf( fp, "%s-%02d.png\n", IMAGE_RIGHT_HEADER, savedImageCount);
+    fprintf( fp, "%s\n", apertureFilePath[getAperturePattern(LEFT_CAM)]);
+    fprintf( fp, "%s\n", apertureFilePath[getAperturePattern(RIGHT_CAM)]);
+
+    getDTPParam( LEFT_CAM, par );
+    if( isinf( par[0] )){ 
+      printf("par[0] = %lf, prevParam[0] = %lf\n", par[0], prevParam[0]);
+      par[0] = prevParam[0]; }
+    else{ prevParam[0] = par[0]; }
+
+    fprintf( fp, "%lf %lf\n",par[0], par[1] );
+
+    getDTPParam( RIGHT_CAM, par );
+
+    if( isinf( par[0] )){ 
+      printf("par[0] = %lf, prevParam[0] = %lf\n", par[0], prevParam[0]);
+      par[0] = prevParam[0]; }
+    else{ prevParam[0] = par[0]; }
+
+
+    fprintf( fp, "%lf %lf\n",par[0], par[1] );
+    
     fclose(fp);
   }
 
@@ -468,7 +483,7 @@ void mouse( int button, int state, int x, int y)
 {
   if( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && cam != CENTER_CAM){
     IplImage *depthBuffer = readDepthBuffer();
-    float depth = - CV_IMAGE_ELEM( depthBuffer, float, getWindowHeight()-y, x);
+    float depth = CV_IMAGE_ELEM( depthBuffer, float, getWindowHeight()-y, x);
     cvReleaseImage( &depthBuffer);
     fdepthBox[cam]->set_float_val( depth );
     changeFocalDepth( cam );
@@ -616,13 +631,17 @@ void takeStereoImage( int num )
 {
   int prevCam = cam;
   saveParameters(NULL);
+  char filename[256];
+
+  sprintf( filename, "%s-%02d.png", IMAGE_LEFT_HEADER, savedImageCount);
   cam = LEFT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  saveImage( (char*)STEREO_LEFT );
+  saveImage( filename );
 
+  sprintf( filename, "%s-%02d.png", IMAGE_RIGHT_HEADER, savedImageCount);
   cam = RIGHT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  saveImage( (char*)STEREO_RIGHT );
+  saveImage( filename );
 
   cam = prevCam;
   setPerspective(VIEW_PERSPECTIVE);
@@ -631,14 +650,17 @@ void takeStereoImage( int num )
 void takeStereoBlurredImage( int num )
 {
   saveParameters(NULL);
-  
+  char filename[256];
+
+  sprintf( filename, "%s-%02d.png", IMAGE_LEFT_HEADER, savedImageCount);
   cam = LEFT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  blur( (char*)BLURRED_LEFT, getAperturePattern(cam));
+  blur( filename, getAperturePattern(cam));
 
+  sprintf( filename, "%s-%02d.png", IMAGE_RIGHT_HEADER, savedImageCount);
   cam = RIGHT_CAM;
   setPerspective(VIEW_PERSPECTIVE);
-  blur( (char*)BLURRED_RIGHT, getAperturePattern(cam));
+  blur( filename, getAperturePattern(cam));
   
   cam = CENTER_CAM;
   setPerspective(VIEW_PERSPECTIVE);

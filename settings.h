@@ -14,7 +14,11 @@
 
 //file path
 #define OBJECT_FILE_PATH "object/research.obj"
-#define TEXTURE_FILE_PATH "object/texture-tile.png"
+#define TEXTURE_NOISE_PATH "object/texture-noise.png"
+#define TEXTURE_LINE_PATH  "object/texture-line.png"
+#define TEXTURE_YOKO_PATH  "object/texture-line-yoko.png"
+
+#define TEXTURE_FILE_PATH TEXTURE_YOKO_PATH
 
 //image file path
 #define DEPTH_BUFFER "img/depth.png"
@@ -25,6 +29,8 @@
 #define BLURRED      "img/blurred.png"
 #define BLURRED_LEFT "img/blurredLeft.png"
 #define BLURRED_RIGHT "img/blurredRight.png"
+#define IMAGE_LEFT_HEADER "img/leftImage"
+#define IMAGE_RIGHT_HEADER "img/rightImage"
 
 
 //Aperture Pattern Path
@@ -38,7 +44,7 @@
 #define CAPAIR1_PATH "aperture/CAPair1.png"
 #define CAPAIR2 4
 #define CAPAIR2_PATH "aperture/CAPair2.png"
-
+extern char apertureFilePath[5][64];
 
 #define INIT_APERTURE CIRCLE
 
